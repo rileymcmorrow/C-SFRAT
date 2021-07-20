@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         self._main.tab4.sideMenu.runAllocation2Signal.connect(self.runAllocation2)
 
         self._initUI()
-        log.info("UI loaded.")
+        #log.info("UI loaded.")
 
     def _initUI(self):
         """Sets window parameters, fonts, initializes UI elements."""
@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
         estimation threads safely if they are still running when application
         is closed.
         """
-        log.info("Covariate Tool application closed.")
+        #log.info("Covariate Tool application closed.")
 
         # --- stop running threads ---
         # stop model estimation thread
@@ -302,7 +302,7 @@ class MainWindow(QMainWindow):
         """Opens file dialog; sets flags and emits signals if file loaded.
 
         Action is only taken if a file is selected and opened using the file
-        dialog. The importFile method is run, and the dataLoaded flag is set to
+        dia#log. The importFile method is run, and the dataLoaded flag is set to
         True afterwards.
         """
         # default location is datasets directory
@@ -312,7 +312,7 @@ class MainWindow(QMainWindow):
         if files[0]:
             self.data.importFile(files[0])  # imports loaded file
             self.dataLoaded = True
-            log.info("Data loaded from %s", files[0])
+            #log.info("Data loaded from %s", files[0])
             self.importFileSignal.emit()    # emits signal that file was
                                             # imported successfully
 
@@ -372,8 +372,8 @@ class MainWindow(QMainWindow):
         if self.dataLoaded:
             # data class stores all combinations of metric names
             self._main.tab1.sideMenu.metricListWidget.addItems(self.data.metricNameCombinations)
-            log.info("%d covariate metrics on this sheet: %s", self.data.numCovariates,
-                                                               self.data.metricNames)
+            # log.info("%d covariate metrics on this sheet: %s", self.data.numCovariates,
+            #                                                    self.data.metricNames)
 
     def subsetData(self, slider_value):
         # minimum subset is 5 data points
@@ -407,21 +407,21 @@ class MainWindow(QMainWindow):
         # self.setPlotStyle(style='-')
         self._main.tab1.plotAndTable.plotWidget.setLineView()
         self._main.tab2.plotAndTable.plotWidget.setLineView()
-        log.info("Plot style set to line view.")
+        #log.info("Plot style set to line view.")
 
     def setPointsView(self):
         """Sets plot style to points."""
         # self.setPlotStyle(style='o')
         self._main.tab1.plotAndTable.plotWidget.setPointsView()
         self._main.tab2.plotAndTable.plotWidget.setPointsView()
-        log.info("Plot style set to points view.")
+        #log.info("Plot style set to points view.")
 
     def setLineAndPointsView(self):
         """Sets plot style to line and points."""
         # self.setPlotStyle(style='-o')
         self._main.tab1.plotAndTable.plotWidget.setLineAndPointsView()
         self._main.tab2.plotAndTable.plotWidget.setLineAndPointsView()
-        log.info("Plot style set to line and points view.")
+        #log.info("Plot style set to line and points view.")
     #endregion
 
     #region plot types
@@ -429,19 +429,19 @@ class MainWindow(QMainWindow):
         """Sets plot type to step plot."""
         self._main.tab1.plotAndTable.plotWidget.setStepPlot()
         self._main.tab2.plotAndTable.plotWidget.setStepPlot()
-        log.info("Line style set to 'step'.")
+        #log.info("Line style set to 'step'.")
 
     def setSmoothPlot(self):
         """Sets plot type to smooth line ('plot')"""
         self._main.tab1.plotAndTable.plotWidget.setSmoothPlot()
         self._main.tab2.plotAndTable.plotWidget.setSmoothPlot()
-        log.info("Line style set to 'smooth'.")
+        #log.info("Line style set to 'smooth'.")
     #endregion
 
     def setMVFView(self):
         """Sets all plots to MVF view."""
         self.plotViewIndex = 0
-        log.info("Data plots set to MVF view.")
+        #log.info("Data plots set to MVF view.")
 
         if self.dataLoaded:
             self._main.tab1.plotAndTable.plotWidget.changePlotType(self.plotViewIndex)
@@ -459,7 +459,7 @@ class MainWindow(QMainWindow):
     def setIntensityView(self):
         """Sets all plots to intensity view."""
         self.plotViewIndex = 1
-        log.info("Data plots set to intensity view.")
+        #log.info("Data plots set to intensity view.")
         # if self.dataLoaded:
         #     self.setRawDataView(self.plotViewIndex)
 
@@ -606,7 +606,7 @@ class MainWindow(QMainWindow):
             else:
                 nonConvergedNames.append(key)
 
-        log.info("DID NOT CONVERGE: %s", nonConvergedNames)
+        ##log.info("DID NOT CONVERGE: %s", nonConvergedNames)
 
         for i in range(1, len(convergedNames)+1):
             convergedNames[i-1] = "{0}. {1}".format(i, convergedNames[i-1])
@@ -625,8 +625,8 @@ class MainWindow(QMainWindow):
         # can re-enable signals for list widgets now
         self._main.tab2.sideMenu.modelListWidget.blockSignals(False)
         self._main.tab3.sideMenu.modelListWidget.blockSignals(False)
-        log.debug("Estimation results: %s", results)
-        log.info("Estimation complete.")
+        #log.debug("Estimation results: %s", results)
+        #log.info("Estimation complete.")
 
     def runGoodnessOfFit(self):
         """Adds goodness of fit measures from estimation to tab 3 table."""

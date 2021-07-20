@@ -1,5 +1,6 @@
 # To check platform
 import sys
+from pathlib import Path
 
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QGridLayout, \
                             QTableWidget, QTableWidgetItem, QAbstractScrollArea, \
@@ -91,29 +92,23 @@ class Tab3(QWidget):
         for key, model in data.items():
             if model.converged:
                 row = [
-                   row_index + 1,
-                   model.shortName,
-                   model.metricString,
-                   model.llfVal,
-                   model.aicVal,
-                   model.bicVal,
-                   model.sseVal,
-                   "",
-                   self.sideMenu.comparison.meanOut[row_index],
-                   self.sideMenu.comparison.medianOut[row_index]]
+                    model.shortName,
+                    model.metricString,
+                    model.runtime]
                 rows.append(row)
-                row_index += 1
+                row_index += 1 # endif
         self.dataframe = pd.DataFrame(rows, columns=self.column_names)
         self.tableModel = PandasModel(self.dataframe)
 
         # get index of columns, used for updating critic values
-        self.meanColumnIndex = self.tableModel._data.columns.get_loc("Critic (Mean)")
-        self.medianColumnIndex = self.tableModel._data.columns.get_loc("Critic (Median)")
+        # self.meanColumnIndex = self.tableModel._data.columns.get_loc("Critic (Mean)")
+        # self.medianColumnIndex = self.tableModel._data.columns.get_loc("Critic (Median)")
 
 
         self.proxyModel.setSourceModel(self.tableModel)
 
         # self.tableModel.setAllData(self.proxyModel)
+        self.exportTable(f'{model.shortName}.csv', data)
 
     def addResultsPSSE(self, results):
         psse_values = []
@@ -144,8 +139,7 @@ class Tab3(QWidget):
         self.setLayout(mainLayout)
 
     def _setupTable(self):
-        self.column_names = ["", "Model Name", "Covariates", "Log-Likelihood", "AIC", "BIC",
-                             "SSE", "PSSE", "Critic (Mean)", "Critic (Median)"]
+        self.column_names = ["Model Name", "Covariates", "Runtime"]
         self.dataframe = pd.DataFrame(columns=self.column_names)
         self.tableModel = PandasModel(self.dataframe)
 
@@ -181,7 +175,7 @@ class Tab3(QWidget):
 
         return table
 
-    def exportTable(self, path):
+    def exportTable(self, path, data):
         """
         Export table to csv
         """
@@ -193,9 +187,12 @@ class Tab3(QWidget):
         # https://stackoverflow.com/questions/27353026/qtableview-output-save-as-csv-or-txt
 
         try:
-            with open(path, 'w', newline='') as stream:
+            for key, model in data.items():
+                file_exists = Path(f'./{model.shortName}.csv').exists()
+            with open(path, 'a+', newline='') as stream:
                 writer = csv.writer(stream)
-                writer.writerow(self.column_names)
+                if file_exists == False:
+                    writer.writerow(self.column_names)
                 for row in range(self.tableModel.rowCount()):
                     rowdata = []
                     for column in range(self.tableModel.columnCount()):

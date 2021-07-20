@@ -272,6 +272,7 @@ class TaskThread(QThread):
                 m.runEstimation(m.covariateData)
                 result[runName] = m
                 self.modelFinished.emit()
+        #print("_____________________________________________")
 
         self.taskFinished.emit(result)
 
@@ -307,7 +308,7 @@ class PSSEThread(QThread):
             fraction: fraction of data to use for PSSE
         """
         super().__init__()
-        self.abort = False  # True when app closed, so thread stops running
+        self.abort = True  # True when app closed, so thread stops running
         self._modelsToRun = modelsToRun
         self._metricNames = metricNames
         self._data = data
