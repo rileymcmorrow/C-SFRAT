@@ -90,13 +90,13 @@ class Tab3(QWidget):
         rows = []
         row_index = 0
         for key, model in data.items():
-            if model.converged:
-                row = [
-                    model.shortName,
-                    model.metricString,
-                    model.runtime]
-                rows.append(row)
-                row_index += 1 # endif
+            #if model.converged:
+            row = [
+                model.shortName,
+                model.metricString,
+                model.runtime]
+            rows.append(row)
+            row_index += 1 # endif
         self.dataframe = pd.DataFrame(rows, columns=self.column_names)
         self.tableModel = PandasModel(self.dataframe)
 
