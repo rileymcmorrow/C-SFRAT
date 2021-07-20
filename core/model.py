@@ -46,7 +46,7 @@ class Model(ABC):
         hazard: List of the results of the hazard function as floats at each
             time.
         omega: 
-        llfVal: Log-likelihood value (float), used as goodness-of-fit measure.
+        llfVal: log-likelihood value (float), used as goodness-of-fit measure.
         aicVal: Akaike information criterion value (float), used as
             goodness-of-fit measure.
         bicVal: Bayesian information criterion value (float), used as
@@ -80,16 +80,17 @@ class Model(ABC):
         self.numParameters = len(self.parameterEstimates)
         self.numSymbols = self.numCovariates + self.numParameters
         self.converged = False
+        self.runtime = 0
         self.setupMetricString()
 
         # logging
-        log.info("---------- %s (%s) ----------", self.name, self.metricNames)
-        log.debug("Failure times: %s", self.t)
-        log.debug("Number of time segments: %d", self.n)
-        log.debug("Failures: %s", self.failures)
-        log.debug("Cumulative failures: %s", self.cumulativeFailures)
-        log.debug("Total failures: %d", self.totalFailures)
-        log.info("Number of covariates: %d", self.numCovariates)
+        #log.info("---------- %s (%s) ----------", self.name, self.metricNames)
+        #log.debug("Failure times: %s", self.t)
+        #log.debug("Number of time segments: %d", self.n)
+        #log.debug("Failures: %s", self.failures)
+        #log.debug("Cumulative failures: %s", self.cumulativeFailures)
+        #log.debug("Total failures: %d", self.totalFailures)
+        #log.info("Number of covariates: %d", self.numCovariates)
 
     def __str__(self):
         modelString = "{0} model with {1} covariates".format(self.name, self.metricString)
@@ -257,10 +258,10 @@ class Model(ABC):
 
         # create new lambda function that calls lambda function for all covariates
         # for no covariates, concatenating array a with zero element array
-        optimize_start = time.process_time()    # record time
+        optimize_start = time.time()    # record time
         initial = self.initialEstimates()
 
-        log.info("Initial estimates: %s", initial)
+        #log.info("Initial estimates: %s", initial)
         f, x = self.LLF_sym(self.hazardSymbolic, covariate_data)    # pass hazard rate function
 
         bh = np.array([symengine.diff(f, x[i]) for i in range(self.numSymbols)])
@@ -269,14 +270,18 @@ class Model(ABC):
 
         solution_object = scipy.optimize.minimize(self.RLL_minimize, x0=initial, args=(covariate_data,), method='Nelder-Mead')
         self.mle_array = self.optimizeSolution(fd, solution_object.x)
-        optimize_stop = time.process_time()
-        log.info("Optimization time: %s", optimize_stop - optimize_start)
-        log.info("Optimized solution: %s", self.mle_array)
+        optimize_stop = time.time()
+        self.runtime = optimize_stop - optimize_start
+        # if self.converged:
+        #     print(self.runtime)
+        #log.info("Optimized solution: %s", self.mle_array)
+        
 
         self.modelParameters = self.mle_array[:self.numParameters]
+        #print(self.modelParameters)
         self.betas = self.mle_array[self.numParameters:]
-        log.info("model parameters =", self.modelParameters)
-        log.info("betas =", self.betas)
+        #log.info("model parameters =", self.modelParameters)
+        #log.info("betas =", self.betas)
 
         hazard = np.array([self.hazardNumerical(i + 1, self.modelParameters) for i in range(self.n)])
         self.hazard_array = hazard    # for MVF prediction, don't want to calculate again
@@ -290,36 +295,36 @@ class Model(ABC):
         return np.array(parameterEstimates + betaEstimate)
 
     def optimizeSolution(self, fd, B):
-        log.info("Solving for MLEs...")
+        #log.info("Solving for MLEs...")
 
         sol_object = scipy.optimize.root(fd, x0=B)
         solution = sol_object.x
         self.converged = sol_object.success
-        log.info("\t" + sol_object.message)
+        #log.info("\t" + sol_object.message)
         
         return solution
 
     def modelFitting(self, hazard, mle, covariate_data):
         self.omega = self.calcOmega(hazard, self.betas, covariate_data)
-        log.info("Calculated omega: %s", self.omega)
+        #log.info("Calculated omega: %s", self.omega)
 
         self.mvf_array = self.MVF_all(mle, self.omega, hazard, covariate_data)
-        log.info("MVF values: %s", self.mvf_array)
+        #log.info("MVF values: %s", self.mvf_array)
         self.intensityList = self.intensityFit(self.mvf_array)
-        log.info("Intensity values: %s", self.intensityList)
+        #log.info("Intensity values: %s", self.intensityList)
 
     def goodnessOfFit(self, mle, covariate_data):
         self.llfVal = self.RLL(mle, covariate_data)
-        log.info("Calculated log-likelihood value: %s", self.llfVal)
+        #log.info("Calculated log-likelihood value: %s", self.llfVal)
 
         p = self.calcP(mle)
         self.aicVal = self.AIC(p)
-        log.info("Calculated AIC: %s", self.aicVal)
+        #log.info("Calculated AIC: %s", self.aicVal)
         self.bicVal = self.BIC(p)
-        log.info("Calculated BIC: %s", self.bicVal)
+        #log.info("Calculated BIC: %s", self.bicVal)
 
         self.sseVal = self.SSE(self.mvf_array, self.cumulativeFailures)
-        log.info("Calculated SSE: %s", self.sseVal)
+        #log.info("Calculated SSE: %s", self.sseVal)
 
     def calcOmega(self, h, betas, covariate_data):
         # can likely use fewer loops
